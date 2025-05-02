@@ -1,5 +1,17 @@
 package com.kuchuhura.accounting.controller;
 
+import java.util.Optional;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.kuchuhura.accounting.dto.LoginDto;
 import com.kuchuhura.accounting.dto.LoginOauth2Dto;
 import com.kuchuhura.accounting.dto.UserCreateDto;
@@ -10,12 +22,10 @@ import com.kuchuhura.accounting.service.UserService;
 import com.kuchuhura.accounting.service.VerificationService;
 import com.kuchuhura.accounting.service.impl.AuthenticationService;
 import com.kuchuhura.accounting.service.impl.JwtService;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.Optional;
 
+import jakarta.validation.Valid;
+
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping(path = "/auth")
 public class AuthenticationController {
