@@ -4,8 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { loginUser, googleLoginUser, loginOAuth2User } from '../api/auth';
-import { useGoogleLogin } from '@react-oauth/google';
+import { loginUser } from '../api/auth';
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../assets/css/Login.css';
@@ -26,10 +25,6 @@ const Login = () => {
     try {
         const response = await loginUser(data);
         localStorage.setItem('token', response.data);
-        const roleResponse = await axios.get('http://localhost:8080/users/me/role', {
-            headers: { 'Authorization': `Bearer ${response.data}` }
-        });
-        localStorage.setItem('role', roleResponse.data);
         toast.success('Success! Redirecting to the home page', {
             position: "bottom-right",
             autoClose: 1000,
@@ -76,59 +71,6 @@ const Login = () => {
     }
 };
 
-const googleLogin = useGoogleLogin({
-    onSuccess: async (credentialResponse) => {
-        try {
-            const googleUser = await googleLoginUser(credentialResponse.access_token);
-            const response = await loginOAuth2User(googleUser);
-            localStorage.setItem('token', response.data);
-            const roleResponse = await axios.get('http://localhost:8080/users/me/role', {
-                headers: { 'Authorization': `Bearer ${response.data}` }
-            });
-            localStorage.setItem('role', roleResponse.data);
-            navigate('/dashboard');
-        } catch (error) {
-            let errorMessage = 'An error occurred while signing in to Google.';
-            if (error.response) {
-                switch (error.response.status) {
-                    case 400:
-                        errorMessage = 'Invalid request. Check the input data.';
-                        break;
-                    default:
-                        errorMessage = `Google Login Error: ${error.response.status} - ${error.response.data?.message || 'Unknown error'}`;
-                }
-            } else if (error.request) {
-                errorMessage = 'No response was received from the server.';
-            } else {
-                errorMessage = 'Error setting up Google login.';
-            }
-            toast.error(errorMessage, {
-                position: "bottom-right",
-                autoClose: 4000,
-                hideProgressBar: false,
-                closeOnClick: false,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                transition: Bounce,
-                });
-        }
-    },
-    onError: (error) => {
-        toast.error(error, {
-            position: "bottom-right",
-            autoClose: 4000,
-            hideProgressBar: false,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
-            transition: Bounce,
-            });
-    },
-});
 
   return (
     <div className="login-wrapper">

@@ -8,16 +8,14 @@ import Authentication from './components/Authentication';
 import Budgets from './components/Budgets';
 
 function App() {
-  const isLoggedIn = !!localStorage.getItem('token');  // simple auth check
-
   return (
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/auth" element={<Authentication />} />
       <Route path="/auth/login" element={<Login />} />
       <Route path="/auth/signup" element={<Register />} />
-      <Route path="/dashboard" element={isLoggedIn ? <Dashboard /> : <Navigate to="/auth" />} />
-      <Route path="/budgets" element={isLoggedIn ? <Budgets /> : <Navigate to="/auth" />} />
+      <Route path="/dashboard" element={!!localStorage.getItem('token') ? <Dashboard /> : <Navigate to="/auth" />} />
+      <Route path="/budgets" element={!!localStorage.getItem('token') ? <Budgets /> : <Navigate to="/auth" />} />
     </Routes>
   );
 }
