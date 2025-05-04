@@ -34,3 +34,4 @@ build/
 
 ### Frontend node modules ###
 /frontend/node_modules/
+.DS_Stores
