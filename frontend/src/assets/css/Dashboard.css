@@ -6,7 +6,7 @@
   
   .navbar {
     background-color: #7b68ee;
-    padding: 1rem 2rem;
+    padding: 1rem 4rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -50,6 +50,7 @@
     background-color: #e03131;
     cursor: pointer;
   }
+
   .dashboard-content {
     flex: 1;
     display: flex;

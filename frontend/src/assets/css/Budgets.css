@@ -1,0 +1,120 @@
+.budgets-page {
+    background-color: #f9f9fc;
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  .budgets-content {
+    padding: 4rem;
+  }
+  
+  
+  .budgets-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  
+  .budgets-header h2 {
+    font-size: 2rem;
+    color: #3d3d6b;
+  }
+  
+  .add-budget-btn {
+    background-color: #6c63ff;
+    color: #fff;
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .add-budget-btn:hover {
+    background-color: #554fd8;
+  }
+  
+  .budget-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .budget-card {
+    background-color: #fff;
+    border-radius: 20px;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    align-items: center;
+  }
+  
+  .budget-info h3 {
+    font-size: 1.4rem;
+    color: #3d3d6b;
+    margin: 0;
+  }
+  
+  .budget-info .type {
+    color: #888;
+    font-size: 0.95rem;
+    margin-top: 0.2rem;
+  }
+  
+  .budget-info .dates {
+    font-size: 0.9rem;
+    color: #aaa;
+    margin-top: 0.2rem;
+  }
+  
+  .budget-summary {
+    text-align: right;
+    flex: 0 0 25%;
+  }
+  
+  .budget-summary h3 {
+    margin: 0 0 0.5rem 0;
+    color: #3d3d6b;
+  }
+  
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .actions .icon {
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s ease;
+  }
+  
+  .actions .icon:hover {
+    color: #6c63ff;
+  }
+  
+  .progress-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #444;
+  }
+  
+  .progress-track {
+    flex: 1;
+    height: 10px;
+    background-color: #eee;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background-color: #6c63ff;
+  }
+  
