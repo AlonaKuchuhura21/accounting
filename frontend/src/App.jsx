@@ -17,7 +17,7 @@ function App() {
       <Route path="/auth/login" element={<Login />} />
       <Route path="/auth/signup" element={<Register />} />
       <Route path="/dashboard" element={isLoggedIn ? <Dashboard /> : <Navigate to="/auth" />} />
-      <Route path="/budgets" element={<Budgets />} />
+      <Route path="/budgets" element={isLoggedIn ? <Budgets /> : <Navigate to="/auth" />} />
     </Routes>
   );
 }
