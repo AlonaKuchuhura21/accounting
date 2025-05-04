@@ -14,6 +14,14 @@ const Home = () => {
 
   return (
     <div className="home-page">
+      {/* Top Navigation */}
+      <nav className="top-nav">
+        <div className="logo">BudgetWise</div>
+        <div className="nav-buttons">
+          <button className="btn-text" onClick={() => navigate('/auth/login')}>Login</button>
+          <button className="btn-outline" onClick={() => navigate('/auth/signup')}>Sign Up</button>
+        </div>
+      </nav>
       {/* Header Section */}
       <header className="header">
         <h1>Budget with a why</h1>

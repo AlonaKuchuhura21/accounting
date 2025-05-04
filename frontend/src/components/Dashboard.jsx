@@ -1,44 +1,59 @@
 import React from 'react';
-import { Route } from 'react-router-dom';
-import Budgets from './Budgets';
-import Home from './Home';
+import { NavLink, useNavigate } from 'react-router-dom';
+import '../assets/css/Dashboard.css';
 
-function Dashboard() {
+const Dashboard = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/');
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      <nav className="flex justify-between items-center px-8 py-4 bg-white shadow">
-        <div className="flex items-center gap-6">
-          <h1 className="text-2xl font-bold">CoinLY</h1>
-          <Route path="/" element={<Home />} className="text-blue-600">Головна</Route>
-          <Route path="/budgets" element={<Budgets />} className="text-blue-600">Бюджети</Route>
+    <div className="dashboard-page">
+      {/* Navigation Bar */}
+      <nav className="navbar">
+        <div className="nav-left">
+          <span className="logo">BudgetWise</span>
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}
+          >
+            Dashboard
+          </NavLink>
+          <NavLink
+            to="/budgets"
+            className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}
+          >
+            Budgets
+          </NavLink>
         </div>
-        <div className="flex items-center gap-4">
-          <button className="px-3 py-1 border rounded">Logout</button>
-          <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
-        </div>
-      </nav>
-
-      <main className="p-8">
-        <div className="bg-white p-6 rounded-2xl shadow flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Квітень</h2>
-          <button className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600">
-            + Створ. Бюджет
+        <div className="nav-right">
+          <button onClick={handleLogout} className="nav-link logout-btn">
+            Logout
           </button>
         </div>
+      </nav>
+      <div className="dashboard-content">
+        <div className="month-summary">
+          <h2>Current Month Summary</h2>
 
-        <div className="mt-4 bg-white p-6 rounded-2xl shadow">
-          <div className="flex justify-between mb-2">
-            <span>Дохід:</span>
-            <span>0 ₴</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Витрати:</span>
-            <span>0 ₴</span>
+          <div className="summary-card">
+            <div className="summary-section">
+              <h4>Total Income</h4>
+              <p>$4,000.00</p>
+            </div>
+
+            <div className="summary-section">
+              <h4>Total Outcome</h4>
+              <p>$2,500.00</p>
+            </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
-}
+};
 
 export default Dashboard;
