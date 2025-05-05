@@ -136,7 +136,7 @@ const Budgets = () => {
                         ) : (
                             <form onSubmit={handleAddOrEdit} className="budget-form">
                                 <h3>{modalType === 'add' ? 'Create budget' : 'Edit budget'}</h3>
-                                <label>Назва<input type="text" name="name" required defaultValue={selectedBudget?.name} /></label>
+                                <label>Name<input type="text" name="name" required defaultValue={selectedBudget?.name} /></label>
                                 <label>Description <textarea name="description" rows="3" /></label>
                                 <label>Type<select
                                     name="type"
