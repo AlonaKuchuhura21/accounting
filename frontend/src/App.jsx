@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard';
 import Home from './components/Home';
 import Authentication from './components/Authentication';
 import Budgets from './components/Budgets';
+import Transactions from './components/Transactions';
 
 function App() {
   return (
