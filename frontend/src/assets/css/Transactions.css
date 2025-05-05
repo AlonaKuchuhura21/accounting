@@ -1,0 +1,80 @@
+.transactions-content {
+  padding: 4rem;
+  font-family: Arial, sans-serif;
+}
+
+.transactions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.transactions-header h2 {
+  font-size: 2rem;
+  color: #3d3d6b;
+}
+
+.transactions-actions select,
+.transactions-button {
+  margin-left: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.transactions-button {
+  background-color: #6c63ff;
+  color: #fff;
+  font-size: 1rem;
+  border: none;
+  transition: background 0.3s ease;
+}
+
+.transactions-button:hover {
+  background-color: #554fd8;
+}
+
+.transactions-list {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.transaction-card {
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  align-items: center;
+}
+
+.transaction-info h3 {
+  font-size: 1.4rem;
+  color: #3d3d6b;
+  margin: 0;
+}
+
+.transaction-info .sum {
+  color: #666;
+  transition: color 0.2s ease;
+  font-size: 1.1rem;
+}
+
+.transaction-info .date {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-top: 0.2rem;
+}
+ 
+.actions .icon {
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.actions .icon:hover {
+  color: #6c63ff;
+}

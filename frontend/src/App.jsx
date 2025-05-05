@@ -16,6 +16,7 @@ function App() {
       <Route path="/auth/signup" element={<Register />} />
       <Route path="/dashboard" element={!!localStorage.getItem('token') ? <Dashboard /> : <Navigate to="/auth" />} />
       <Route path="/budgets" element={!!localStorage.getItem('token') ? <Budgets /> : <Navigate to="/auth" />} />
+      <Route path="/transactions" element={!!localStorage.getItem('token') ? <Transactions /> : <Navigate to="/auth" />} />
     </Routes>
   );
 }
