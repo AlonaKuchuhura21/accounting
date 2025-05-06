@@ -93,7 +93,7 @@ const Transactions = () => {
                             <option value="sum">Sum</option>
                         </select>
                         <button className="transactions-button" onClick={() => openModal('add')}>Add transaction</button>
-                        <button className="transactions-button">Download CSV</button>
+                        <button className="transactions-button">Download CSV test</button>
                     </div>
                 </header>
                 <main className="transactions-list">
