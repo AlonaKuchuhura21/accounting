@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Eye, Pencil, Trash2, WalletCards } from 'lucide-react';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 import '../assets/css/Budgets.css';
 import '../assets/css/Modal.css';
 
@@ -53,10 +53,6 @@ const Budgets = () => {
         navigate('/');
     };
 
-    const handleViewTransactions = (budgetId) => {
-        navigate(`/transactions?budgetId=${budgetId}`);
-    };
-
     return (
         <div className="budgets-page">
             <nav className="navbar">
@@ -93,7 +89,7 @@ const Budgets = () => {
                 </header>
 
                 <div className="budget-list">
-                    {budgets.length ? budgets.map(budget => {
+                    {budgets.map(budget => {
                         const percent = Math.round((budget.remaining / budget.total) * 100);
                         return (
                             <div key={budget.id} className="budget-card">
@@ -105,9 +101,8 @@ const Budgets = () => {
                                 <div className="budget-summary">
                                     <h3>{budget.total.toLocaleString()} ₴</h3>
                                     <div className="actions">
-                                        <WalletCards size={20} title="View Details" className="icon" onClick={() => handleViewTransactions(budget.id)} />
                                         <Eye size={20} title="View Details" className="icon" onClick={() => openModal('view', budget)} />
-                                        <Pencil size={20} title="Edit" className="icon" onClick={() => openModal('edit', budget)} />
+                                        <Pencil size={20} title="Edit" className="icon"  onClick={() => openModal('edit', budget)} />
                                         <Trash2 size={20} title="Remove" className="icon" />
                                     </div>
                                     <div className="progress-bar">
@@ -120,9 +115,7 @@ const Budgets = () => {
                                 </div>
                             </div>
                         );
-                    }) : (
-                        <h2>No Budgets are added yet</h2>
-                    )}
+                    })}
                 </div>
             </div>
             {modalType && (
@@ -143,7 +136,7 @@ const Budgets = () => {
                         ) : (
                             <form onSubmit={handleAddOrEdit} className="budget-form">
                                 <h3>{modalType === 'add' ? 'Create budget' : 'Edit budget'}</h3>
-                                <label>Name<input type="text" name="name" required defaultValue={selectedBudget?.name} /></label>
+                                <label>Назва<input type="text" name="name" required defaultValue={selectedBudget?.name} /></label>
                                 <label>Description <textarea name="description" rows="3" /></label>
                                 <label>Type<select
                                     name="type"
