@@ -17,6 +17,7 @@ const formatDate = (dateStr) => {
 
 const Budgets = () => {
   const [budgets, setBudgets] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [modalType, setModalType] = useState(null);
   const [selectedBudget, setSelectedBudget] = useState(null);
 
@@ -28,10 +29,13 @@ const Budgets = () => {
 
   const fetchBudgets = async () => {
     try {
+      setLoading(true);
       const response = await getBudgets();
       setBudgets(response.data.content || []);
     } catch (error) {
       console.error('Error fetching budgets:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -113,8 +117,10 @@ const Budgets = () => {
           </div>
         </header>
 
-        {budgets.length === 0 ? (
-          <p className="empty-msg">Please create your first budget.</p>
+        {loading ? (
+          <p className="empty-msg">Loading...</p>
+        ) : budgets.length === 0 ? (
+          <p className="empty-msg">No budgets are added yet.</p>
         ) : (
           <div className="budget-list">
             {budgets.map((budget) => {
@@ -136,7 +142,7 @@ const Budgets = () => {
                   <div className="budget-summary">
                     <h3>{budget.initialBalance != null ? `${budget.initialBalance.toLocaleString()} ₴` : '—'}</h3>
                     <div className="actions">
-                      <WalletCards size={20} title="View Details" className="icon" onClick={() => handleViewTransactions(budget.id)} />
+                      <WalletCards size={20} title="View Transactions" className="icon" onClick={() => handleViewTransactions(budget.id)} />
                       <Eye size={20} title="View" className="icon" onClick={() => openModal('view', budget)} />
                       <Pencil size={20} title="Edit" className="icon" onClick={() => openModal('edit', budget)} />
                       <Trash2 size={20} title="Delete" className="icon" onClick={() => handleDelete(budget.id)} />
