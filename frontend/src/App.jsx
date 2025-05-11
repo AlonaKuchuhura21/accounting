@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./components/Login";
 import Register from "./components/Register";
+import ConfirmEmail from "./components/ConfirmEmail";
 import Dashboard from "./components/Dashboard";
 import Home from "./components/Home";
 import Authentication from "./components/Authentication";
@@ -16,6 +17,7 @@ function App() {
       <Route path="/auth" element={<Authentication />} />
       <Route path="/auth/login" element={<Login />} />
       <Route path="/auth/signup" element={<Register />} />
+      <Route path="/confirm-email" element={<ConfirmEmail />} />
       <Route
         path="/dashboard"
         element={
