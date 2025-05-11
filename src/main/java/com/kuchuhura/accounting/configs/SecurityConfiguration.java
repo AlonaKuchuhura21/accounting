@@ -39,7 +39,7 @@ public class SecurityConfiguration {
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/auth/**", "/budgets/**", "/transactions/**", "/users**").permitAll() // Public endpoints
+                .requestMatchers("/auth/**", "/budgets/**", "/transactions/**", "/users**", "/reports**").permitAll() // Public endpoints
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

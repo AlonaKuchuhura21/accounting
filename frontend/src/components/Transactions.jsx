@@ -10,6 +10,9 @@ import {
   getYearlyTransactions,
   updateTransaction,
 } from "../api/transactions";
+import { ToastContainer, toast, Bounce } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { loadReport } from "../api/reports";
 
 const Transactions = () => {
   const location = useLocation();
@@ -39,7 +42,9 @@ const Transactions = () => {
   };
 
   useEffect(() => {
-    if (selectedBudgetId) fetchTransactions();
+    if (selectedBudgetId) {
+      fetchTransactions();
+    }
   }, [selectedBudgetId]);
 
   const openModal = (type, transaction = null) => {
@@ -60,6 +65,37 @@ const Transactions = () => {
       await fetchTransactions();
     } catch (error) {
       console.error("Error creating transaction:", error);
+
+      let errorMessage = "There was an error. Please try again.";
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            errorMessage = "Incorrect email address or password";
+            break;
+          case 403:
+            errorMessage = "You do not have the required permissions.";
+            break;
+          default:
+            errorMessage = `Error: ${error.response.status} - ${
+              error.response.data?.message || "Unknown error"
+            }`;
+        }
+      } else if (error.request) {
+        errorMessage = "No response was received from the server.";
+      } else {
+        errorMessage = "Request for an installation error.";
+      }
+      toast.error(errorMessage, {
+        position: "bottom-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
     }
   };
 
@@ -80,6 +116,30 @@ const Transactions = () => {
       await fetchTransactions();
     } catch (error) {
       console.error("Error deleting transaction:", error);
+    }
+  };
+
+  const handleDownload = async () => {
+    try {
+      const response = await loadReport(selectedBudgetId);
+  
+      if (!response.ok) {
+        throw new Error('Failed to download file');
+      }
+  
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'transactions.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert('Failed to download file. Please try again later.');
     }
   };
 
@@ -118,6 +178,7 @@ const Transactions = () => {
               <option value="sum">Sum</option>
             </select>
             <button className="transactions-button" onClick={() => openModal("add")}>Add transaction</button>
+            <button className="transactions-button" onClick={() => handleDownload()}>Load CVS</button>
           </div>
         </header>
 
@@ -169,6 +230,7 @@ const Transactions = () => {
           />
         )}
       </div>
+      <ToastContainer />
     </div>
   );
 };

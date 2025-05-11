@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Pie, Line } from 'react-chartjs-2';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
     Chart as ChartJS,
     ArcElement,
@@ -99,6 +99,12 @@ const Analytics = () => {
                     >
                         Transactions
                     </NavLink>
+                    <NavLink
+                        to="/analytics"
+                        className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}
+                    >
+                        Analytics
+                    </NavLink>
                 </div>
                 <div className="nav-right">
                     <button onClick={handleLogout} className="nav-link logout-btn">
@@ -111,7 +117,7 @@ const Analytics = () => {
                     <h2>Analytics</h2>
                 </div>
                 <div className="period-selector">
-                    <label>Виберіть період:</label>
+                    <label>Select period: </label>
                     <input type="month" onChange={handlePeriodChange} />
                 </div>
 

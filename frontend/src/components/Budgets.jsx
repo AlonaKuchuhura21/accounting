@@ -9,6 +9,8 @@ import {
   updateBudget,
   deleteBudget,
 } from '../api/budgets';
+import { ToastContainer, toast, Bounce } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
@@ -72,6 +74,36 @@ const Budgets = () => {
       await fetchBudgets();
     } catch (error) {
       console.error('Error saving budget:', error);
+      let errorMessage = "There was an error. Please try again.";
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            errorMessage = "Incorrect email address or password";
+            break;
+          case 403:
+            errorMessage = "You do not have the required permissions.";
+            break;
+          default:
+            errorMessage = `Error: ${error.response.status} - ${
+              error.response.data?.message || "Unknown error"
+            }`;
+        }
+      } else if (error.request) {
+        errorMessage = "No response was received from the server.";
+      } else {
+        errorMessage = "Request for an installation error.";
+      }
+      toast.error(errorMessage, {
+        position: "bottom-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
     }
   };
 
@@ -184,7 +216,7 @@ const Budgets = () => {
                 <label>Type<select name="type" defaultValue={selectedBudget?.type || 'PERSONAL'} required>
                   <option value="PERSONAL">Personal</option>
                   <option value="FAMILY">Family</option>
-                  <option value="ENTERTAINMENT">Entertainment</option>
+                  <option value="ENTERTAINMENT">Entertainment</option> 
                   <option value="TRANSPORT">Transport</option>
                   <option value="TRAVEL">Travel</option>
                   <option value="HEALTH">Health</option>
@@ -205,6 +237,7 @@ const Budgets = () => {
           </div>
         </div>
       )}
+      <ToastContainer />
     </div>
   );
 };

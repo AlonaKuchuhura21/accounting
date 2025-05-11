@@ -1,20 +1,20 @@
 package com.kuchuhura.accounting.service.impl;
 
-import com.kuchuhura.accounting.dto.ReportDto;
-import com.kuchuhura.accounting.entity.Budget;
-import com.kuchuhura.accounting.entity.Transaction;
-import com.kuchuhura.accounting.repository.TransactionRepository;
-import com.kuchuhura.accounting.service.ReportService;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.List;
+
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Date;
-import java.util.List;
+import com.kuchuhura.accounting.dto.ReportDto;
+import com.kuchuhura.accounting.entity.Budget;
+import com.kuchuhura.accounting.entity.Transaction;
+import com.kuchuhura.accounting.repository.TransactionRepository;
+import com.kuchuhura.accounting.service.ReportService;
 
 @Service
 public class ReportServiceImpl implements ReportService {
@@ -24,8 +24,8 @@ public class ReportServiceImpl implements ReportService {
         this.transactionRepository = transactionRepository;
     }
 
-    public ReportDto generateTransactionReport(Budget budget, Date start, Date end) throws IOException {
-        List<Transaction> transactions = transactionRepository.findTransactionsBetweenDates(budget.getId(), start, end);
+    public ReportDto generateTransactionReport(Budget budget) throws IOException {
+        List<Transaction> transactions = transactionRepository.findTransactionsBetweenDates(budget.getId(), budget.getStartDate(), budget.getEndDate());
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Transactions");
             createHeaderRow(sheet);
