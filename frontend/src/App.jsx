@@ -7,6 +7,7 @@ import Home from "./components/Home";
 import Authentication from "./components/Authentication";
 import Budgets from "./components/Budgets";
 import Transactions from "./components/Transactions"; // ← додано колегою
+import Analytics from "./components/Analytics";
 
 function App() {
   return (
@@ -40,6 +41,16 @@ function App() {
         element={
           !!localStorage.getItem('token') ? (
             <Transactions />
+          ): (
+            <Navigate to="/auth" />
+          )
+        }
+      />
+      <Route
+        path="/analytics"
+        element={
+          !!localStorage.getItem('token') ? (
+            <Analytics />
           ): (
             <Navigate to="/auth" />
           )
