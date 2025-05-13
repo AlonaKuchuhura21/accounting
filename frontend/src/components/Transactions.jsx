@@ -18,6 +18,7 @@ const Transactions = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const selectedBudgetId = queryParams.get("budgetId");
+
   const [transactions, setTransactions] = useState([]);
   const [modalType, setModalType] = useState(null);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
@@ -27,14 +28,22 @@ const Transactions = () => {
     try {
       const currentYear = new Date().getFullYear();
       const res = await getYearlyTransactions(selectedBudgetId, currentYear);
-      const all = Object.values(res.data.data).flatMap((month) => {
-        if (!month || typeof month !== 'object') return [];
 
-        const incomeArr = Array.isArray(month.income) ? month.income.map(t => ({ ...t, amount: t.amount, type: 'INCOME' })) : [];
-        const expenseArr = Array.isArray(month.expense) ? month.expense.map(t => ({ ...t, amount: -t.amount, type: 'EXPENSE' })) : [];
+      // 💡 Плоский масив зі всіх транзакцій у відповіді
+      const all = Object.values(res.data.data).flatMap((month) => {
+        if (!month || typeof month !== "object") return [];
+
+        const incomeArr = Array.isArray(month.income)
+          ? month.income.map((t) => ({ ...t, type: "INCOME" }))
+          : [];
+
+        const expenseArr = Array.isArray(month.expense)
+          ? month.expense.map((t) => ({ ...t, type: "EXPENSE", amount: -t.amount }))
+          : [];
 
         return [...incomeArr, ...expenseArr];
       });
+
       setTransactions(all);
     } catch (error) {
       console.error("Error fetching transactions:", error);
@@ -59,43 +68,12 @@ const Transactions = () => {
 
   const handleAddTransaction = async (data) => {
     try {
-      console.log("Creating transaction with data:", data); // 🐞 Debug log
       await createTransaction(data, selectedBudgetId);
       closeModal();
       await fetchTransactions();
     } catch (error) {
       console.error("Error creating transaction:", error);
-
-      let errorMessage = "There was an error. Please try again.";
-      if (error.response) {
-        switch (error.response.status) {
-          case 401:
-            errorMessage = "Incorrect email address or password";
-            break;
-          case 403:
-            errorMessage = "You do not have the required permissions.";
-            break;
-          default:
-            errorMessage = `Error: ${error.response.status} - ${
-              error.response.data?.message || "Unknown error"
-            }`;
-        }
-      } else if (error.request) {
-        errorMessage = "No response was received from the server.";
-      } else {
-        errorMessage = "Request for an installation error.";
-      }
-      toast.error(errorMessage, {
-        position: "bottom-right",
-        autoClose: 4000,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-        transition: Bounce,
-      });
+      showToast(error);
     }
   };
 
@@ -106,6 +84,7 @@ const Transactions = () => {
       await fetchTransactions();
     } catch (error) {
       console.error("Error updating transaction:", error);
+      showToast(error);
     }
   };
 
@@ -116,30 +95,27 @@ const Transactions = () => {
       await fetchTransactions();
     } catch (error) {
       console.error("Error deleting transaction:", error);
+      showToast(error);
     }
   };
 
   const handleDownload = async () => {
     try {
       const response = await loadReport(selectedBudgetId);
-  
-      if (!response.ok) {
-        throw new Error('Failed to download file');
-      }
-  
+      if (!response.ok) throw new Error("Failed to download file");
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', 'transactions.xlsx');
+      link.setAttribute("download", "transactions.xlsx");
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Download failed:', error);
-      alert('Failed to download file. Please try again later.');
+      console.error("Download failed:", error);
+      alert("Failed to download file. Please try again later.");
     }
   };
 
@@ -149,11 +125,44 @@ const Transactions = () => {
     navigate("/");
   };
 
-  const sortedTransactions = [...transactions].sort((a, b) => {
-    return sortOption === "sum"
+  const showToast = (error) => {
+    let errorMessage = "There was an error. Please try again.";
+    if (error.response) {
+      switch (error.response.status) {
+        case 401:
+          errorMessage = "Incorrect email address or password";
+          break;
+        case 403:
+          errorMessage = "You do not have the required permissions.";
+          break;
+        default:
+          errorMessage = `Error: ${error.response.status} - ${
+            error.response.data?.message || "Unknown error"
+          }`;
+      }
+    } else if (error.request) {
+      errorMessage = "No response was received from the server.";
+    } else {
+      errorMessage = "Request error.";
+    }
+
+    toast.error(errorMessage, {
+      position: "bottom-right",
+      autoClose: 4000,
+      hideProgressBar: false,
+      closeOnClick: false,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "light",
+      transition: Bounce,
+    });
+  };
+
+  const sortedTransactions = [...transactions].sort((a, b) =>
+    sortOption === "sum"
       ? b.amount - a.amount
-      : new Date(b.date) - new Date(a.date);
-  });
+      : new Date(b.date) - new Date(a.date)
+  );
 
   return (
     <div className="transactions-page">
@@ -186,7 +195,7 @@ const Transactions = () => {
           {sortedTransactions.length ? sortedTransactions.map((txn) => (
             <div key={txn.id} className="transaction-card">
               <div className="transaction-info">
-                <h3>{txn.name || txn.title}</h3>
+                <h3>{txn.title}</h3>
                 <p className="sum">Sum: {txn.amount > 0 ? "+" : ""}{txn.amount} ₴</p>
                 <p className="date">{txn.date}</p>
               </div>
@@ -216,20 +225,14 @@ const Transactions = () => {
         )}
 
         {modalType === "add" && (
-          <AddTransactionModal
-            onClose={closeModal}
-            onSubmit={handleAddTransaction}
-          />
+          <AddTransactionModal onClose={closeModal} onSubmit={handleAddTransaction} />
         )}
 
         {modalType === "edit" && (
-          <EditTransactionModal
-            transaction={selectedTransaction}
-            onClose={closeModal}
-            onSubmit={handleUpdateTransaction}
-          />
+          <EditTransactionModal transaction={selectedTransaction} onClose={closeModal} onSubmit={handleUpdateTransaction} />
         )}
       </div>
+
       <ToastContainer />
     </div>
   );

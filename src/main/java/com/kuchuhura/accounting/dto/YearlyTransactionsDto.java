@@ -4,7 +4,7 @@ import java.time.Month;
 import java.util.Map;
 
 public record YearlyTransactionsDto(
-        String budget,
-        Map<Month, MonthlyTransactionSummary> data
+    String budget,
+    Map<Month, MonthlyTransactionList> data
 ) {
 }

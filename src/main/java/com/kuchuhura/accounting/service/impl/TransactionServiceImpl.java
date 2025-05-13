@@ -1,7 +1,19 @@
 package com.kuchuhura.accounting.service.impl;
 
-import com.kuchuhura.accounting.dto.MonthlyTransactionSummary;
+import java.time.Month;
+import java.time.ZoneId;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import com.kuchuhura.accounting.dto.MonthlyTransactionList;
 import com.kuchuhura.accounting.dto.TransactionCreateDto;
+import com.kuchuhura.accounting.dto.TransactionDto;
 import com.kuchuhura.accounting.dto.TransactionUpdateDto;
 import com.kuchuhura.accounting.dto.YearlyTransactionsDto;
 import com.kuchuhura.accounting.entity.Budget;
@@ -11,14 +23,8 @@ import com.kuchuhura.accounting.exception.CustomException;
 import com.kuchuhura.accounting.repository.BudgetRepository;
 import com.kuchuhura.accounting.repository.TransactionRepository;
 import com.kuchuhura.accounting.service.TransactionService;
-import jakarta.transaction.Transactional;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
 
-import java.time.Month;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.stream.Collectors;
+import jakarta.transaction.Transactional;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
@@ -29,7 +35,6 @@ public class TransactionServiceImpl implements TransactionService {
         this.transactionRepository = transactionRepository;
         this.budgetRepository = budgetRepository;
     }
-
     @Override
     public Optional<Transaction> getTransactionById(long id) {
         return transactionRepository.findById(id);
@@ -38,24 +43,30 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public YearlyTransactionsDto allTransactions(Budget budget, int year) {
         List<Transaction> transactions = transactionRepository.findByBudgetIdAndYear(budget.getId(), year);
+
         Map<Month, List<Transaction>> groupedByMonth = transactions.stream()
                 .collect(Collectors.groupingBy(t -> t.getDate().toInstant()
                         .atZone(ZoneId.systemDefault())
                         .getMonth()));
-        Map<Month, MonthlyTransactionSummary> summaryByMonth = new EnumMap<>(Month.class);
+
+        Map<Month, MonthlyTransactionList> summaryByMonth = new EnumMap<>(Month.class);
+
         for (Month month : Month.values()) {
             List<Transaction> monthTransactions = groupedByMonth.getOrDefault(month, List.of());
-            double income = monthTransactions.stream()
-                    .filter(t -> t.getType() == TransactionType.INCOME)
-                    .mapToDouble(Transaction::getAmount)
-                    .sum();
-            double expense = monthTransactions.stream()
-                    .filter(t -> t.getType() == TransactionType.EXPENSE)
-                    .mapToDouble(Transaction::getAmount)
-                    .sum();
 
-            summaryByMonth.put(month, new MonthlyTransactionSummary(income, expense));
+            List<TransactionDto> income = monthTransactions.stream()
+                    .filter(t -> t.getType() == TransactionType.INCOME)
+                    .map(TransactionDto::from)
+                    .collect(Collectors.toList());
+
+            List<TransactionDto> expense = monthTransactions.stream()
+                    .filter(t -> t.getType() == TransactionType.EXPENSE)
+                    .map(TransactionDto::from)
+                    .collect(Collectors.toList());
+
+            summaryByMonth.put(month, new MonthlyTransactionList(income, expense));
         }
+
         return new YearlyTransactionsDto(budget.getTitle(), summaryByMonth);
     }
 
@@ -70,13 +81,15 @@ public class TransactionServiceImpl implements TransactionService {
         } else {
             budget.setCurrentBalance(budget.getCurrentBalance() + transactionCreateDto.amount());
         }
+
         Transaction transaction = new Transaction()
                 .setTitle(transactionCreateDto.title())
-                .setDescription((transactionCreateDto.description()))
+                .setDescription(transactionCreateDto.description())
                 .setType(transactionCreateDto.type())
                 .setDate(transactionCreateDto.date())
                 .setAmount(transactionCreateDto.amount())
                 .setBudget(budget);
+
         budgetRepository.save(budget);
         transactionRepository.save(transaction);
     }
@@ -85,11 +98,15 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public void updateTransaction(Transaction transaction, TransactionUpdateDto dto) throws CustomException {
         Budget budget = transaction.getBudget();
+
+        // Скасовуємо попередню транзакцію
         if (transaction.getType() == TransactionType.EXPENSE) {
             budget.setCurrentBalance(budget.getCurrentBalance() + transaction.getAmount());
         } else {
             budget.setCurrentBalance(budget.getCurrentBalance() - transaction.getAmount());
         }
+
+        // Оновлюємо поля
         if (dto.title() != null) {
             transaction.setTitle(dto.title());
         }
@@ -105,6 +122,8 @@ public class TransactionServiceImpl implements TransactionService {
         if (dto.amount() != null) {
             transaction.setAmount(dto.amount());
         }
+
+        // Застосовуємо нову транзакцію
         if (transaction.getType() == TransactionType.EXPENSE) {
             if (budget.getCurrentBalance() < transaction.getAmount()) {
                 throw new CustomException("Your budget has less than this transaction :(", HttpStatus.BAD_REQUEST);
@@ -113,6 +132,7 @@ public class TransactionServiceImpl implements TransactionService {
         } else {
             budget.setCurrentBalance(budget.getCurrentBalance() + transaction.getAmount());
         }
+
         budgetRepository.save(budget);
         transactionRepository.save(transaction);
     }
@@ -121,6 +141,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public void deleteTransaction(Transaction transaction) throws CustomException {
         Budget budget = transaction.getBudget();
+
         if (transaction.getType() == TransactionType.EXPENSE) {
             budget.setCurrentBalance(budget.getCurrentBalance() + transaction.getAmount());
         } else {
@@ -130,6 +151,7 @@ public class TransactionServiceImpl implements TransactionService {
             }
             budget.setCurrentBalance(budget.getCurrentBalance() - transaction.getAmount());
         }
+
         budgetRepository.save(budget);
         transactionRepository.delete(transaction);
     }

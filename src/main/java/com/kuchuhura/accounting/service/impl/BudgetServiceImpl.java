@@ -1,5 +1,13 @@
 package com.kuchuhura.accounting.service.impl;
 
+import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
 import com.kuchuhura.accounting.dto.BudgetCreateDto;
 import com.kuchuhura.accounting.dto.BudgetPageDto;
 import com.kuchuhura.accounting.dto.BudgetUpdateDto;
@@ -7,12 +15,6 @@ import com.kuchuhura.accounting.entity.Budget;
 import com.kuchuhura.accounting.entity.User;
 import com.kuchuhura.accounting.repository.BudgetRepository;
 import com.kuchuhura.accounting.service.BudgetService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import java.util.Optional;
 
 @Service
 public class BudgetServiceImpl implements BudgetService {
@@ -51,7 +53,7 @@ public class BudgetServiceImpl implements BudgetService {
                 .setFrom(budgetCreateDto.from())
                 .setTo(budgetCreateDto.to())
                 .setInitialBalance(budgetCreateDto.initialBalance())
-                .setCurrentBalance(0.0)
+                .setCurrentBalance(budgetCreateDto.initialBalance())
                 .setUser(user);
         budgetRepository.save(budget);
     }
