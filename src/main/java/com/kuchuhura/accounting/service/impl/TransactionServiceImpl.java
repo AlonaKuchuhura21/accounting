@@ -1,8 +1,11 @@
 package com.kuchuhura.accounting.service.impl;
 
+import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.kuchuhura.accounting.dto.MonthlyTransactionList;
 import com.kuchuhura.accounting.dto.MonthlyTransactionSummary;
+import com.kuchuhura.accounting.dto.TopSpendingDto;
 import com.kuchuhura.accounting.dto.TransactionCreateDto;
 import com.kuchuhura.accounting.dto.TransactionDto;
 import com.kuchuhura.accounting.dto.TransactionUpdateDto;
@@ -26,6 +30,7 @@ import com.kuchuhura.accounting.repository.TransactionRepository;
 import com.kuchuhura.accounting.service.TransactionService;
 
 import jakarta.transaction.Transactional;
+import java.util.Arrays;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
@@ -72,30 +77,58 @@ public class TransactionServiceImpl implements TransactionService {
         return new YearlyTransactionsDto(budget.getTitle(), summaryByMonth);
     }
 
-    @Override
+   @Override
     public MonthlyTransactionSummary getMonthlySummary(Budget budget, int year, int month) {
-        List<Transaction> transactions = budget.getTransaction();
-
-        double income = transactions.stream()
+        List<Transaction> transactions = budget.getTransaction().stream()
                 .filter(t -> {
-                    var localDate = t.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                    return localDate.getYear() == year && localDate.getMonthValue() == month;
+                    LocalDate date = t.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    return date.getYear() == year && date.getMonthValue() == month;
                 })
-                .filter(t -> t.getType() == TransactionType.INCOME)
-                .mapToDouble(Transaction::getAmount)
-                .sum();
+                .toList();
 
-        double expense = transactions.stream()
-                .filter(t -> {
-                    var localDate = t.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                    return localDate.getYear() == year && localDate.getMonthValue() == month;
-                })
+        double totalIncome = 0;
+        double totalExpense = 0;
+
+        Map<String, Double> spendingByName = new HashMap<>();
+        List<Double> weeklyIncome = new ArrayList<>(Arrays.asList(0.0, 0.0, 0.0, 0.0));
+        List<Double> weeklyExpense = new ArrayList<>(Arrays.asList(0.0, 0.0, 0.0, 0.0));
+
+        for (Transaction t : transactions) {
+            double amount = t.getAmount();
+            LocalDate date = t.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            int week = (date.getDayOfMonth() - 1) / 7; // 0..3
+
+            if (t.getType() == TransactionType.INCOME) {
+                totalIncome += amount;
+                weeklyIncome.set(week, weeklyIncome.get(week) + amount);
+            } else {
+                totalExpense += amount;
+                weeklyExpense.set(week, weeklyExpense.get(week) + amount);
+
+                // by name
+                spendingByName.put(t.getTitle(),
+                        spendingByName.getOrDefault(t.getTitle(), 0.0) + amount);
+            }
+        }
+
+        // Top 3 spendings
+        List<TopSpendingDto> top3 = transactions.stream()
                 .filter(t -> t.getType() == TransactionType.EXPENSE)
-                .mapToDouble(Transaction::getAmount)
-                .sum();
+                .sorted((a, b) -> Double.compare(b.getAmount(), a.getAmount()))
+                .limit(3)
+                .map(t -> new TopSpendingDto(t.getTitle(), t.getAmount()))
+                .toList();
 
-        return new MonthlyTransactionSummary(income, expense);
+        return new MonthlyTransactionSummary(
+                totalIncome,
+                totalExpense,
+                spendingByName,
+                weeklyIncome,
+                weeklyExpense,
+                top3
+        );
     }
+
 
 
     @Transactional

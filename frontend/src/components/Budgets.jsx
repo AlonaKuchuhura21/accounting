@@ -213,7 +213,7 @@ const Budgets = () => {
                 <h3>{modalType === 'add' ? 'Create Budget' : 'Edit Budget'}</h3>
                 <label>Title<input type="text" name="title" required defaultValue={selectedBudget?.title} /></label>
                 <label>Description<textarea name="description" rows="3" defaultValue={selectedBudget?.description} /></label>
-                <label>Type<select name="type" defaultValue={selectedBudget?.type || 'PERSONAL'} required disabled={modalType !== 'add'} >
+                <label>Type<select name="type" defaultValue={selectedBudget?.type || 'PERSONAL'} required>
                   <option value="PERSONAL">Personal</option>
                   <option value="FAMILY">Family</option>
                   <option value="ENTERTAINMENT">Entertainment</option> 
