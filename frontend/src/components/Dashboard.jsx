@@ -1,9 +1,34 @@
-import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import "../assets/css/Dashboard.css";
+import { getMonthlySummary } from "../api/dashboard";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [income, setIncome] = useState(0);
+  const [outcome, setOutcome] = useState(0);
+
+  useEffect(() => {
+    const fetchSummary = async () => {
+      const queryParams = new URLSearchParams(location.search);
+      const budgetId = queryParams.get("budgetId");
+      const year = new Date().getFullYear();
+      const month = new Date().getMonth() + 1;
+
+      if (!budgetId) return;
+
+      try {
+        const response = await getMonthlySummary(budgetId, year, month);
+        setIncome(response.data.income);
+        setOutcome(response.data.expense);
+      } catch (error) {
+        console.error("Failed to fetch monthly summary:", error);
+      }
+    };
+
+    fetchSummary();
+  }, [location.search]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -13,7 +38,6 @@ const Dashboard = () => {
   return (
     <>
       <div className="dashboard-thumb">
-        {/* Navigation Bar */}
         <nav className="navbar">
           <div className="nav-left">
             <span className="logo">BudgetWise</span>
@@ -55,17 +79,15 @@ const Dashboard = () => {
                 <div className="summary-card">
                   <div className="summary-thumb">
                     <h4 className="summary-income-text">Income:</h4>
-
                     <div className="income-values-thumb">
-                      <p className="income-value">$500 earned</p>
+                      <p className="income-value">{`₴${income} earned`}</p>
                     </div>
                   </div>
 
                   <div className="outcome-thumb">
                     <p className="summary-outcome-text">Outcome:</p>
-
                     <div className="outcome-values-thumb">
-                      <p className="outcome-value">$250 spent</p>
+                      <p className="outcome-value">{`₴${outcome} spent`}</p>
                     </div>
                   </div>
                 </div>
