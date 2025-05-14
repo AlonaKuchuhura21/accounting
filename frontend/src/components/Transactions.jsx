@@ -172,6 +172,7 @@ const Transactions = () => {
           <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>Dashboard</NavLink>
           <NavLink to="/budgets" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>Budgets</NavLink>
           <NavLink to="/transactions" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>Transactions</NavLink>
+          <NavLink to="/analytics" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>Analytics</NavLink>
         </div>
         <div className="nav-right">
           <button onClick={handleLogout} className="nav-link logout-btn">Logout</button>
