@@ -152,7 +152,7 @@ const Budgets = () => {
         {loading ? (
           <p className="empty-msg">Loading...</p>
         ) : budgets.length === 0 ? (
-          <p className="empty-msg">No budgets are added yet.</p>
+          <p className="empty-msg"><h2>No budgets are added yet.</h2></p>
         ) : (
           <div className="budget-list">
             {budgets.map((budget) => {

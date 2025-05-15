@@ -17,19 +17,32 @@ import { loadReport } from "../api/reports";
 const Transactions = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const selectedBudgetId = queryParams.get("budgetId");
 
+  const [selectedBudgetId, setSelectedBudgetId] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [modalType, setModalType] = useState(null);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [sortOption, setSortOption] = useState("date");
+
+  // Отримуємо budgetId з URL або localStorage
+  useEffect(() => {
+    const fromURL = queryParams.get("budgetId");
+    if (fromURL) {
+      localStorage.setItem("activeBudgetId", fromURL);
+      setSelectedBudgetId(fromURL);
+    } else {
+      const stored = localStorage.getItem("activeBudgetId");
+      if (stored) {
+        setSelectedBudgetId(stored);
+      }
+    }
+  }, [location.search]);
 
   const fetchTransactions = async () => {
     try {
       const currentYear = new Date().getFullYear();
       const res = await getYearlyTransactions(selectedBudgetId, currentYear);
 
-      // 💡 Плоский масив зі всіх транзакцій у відповіді
       const all = Object.values(res.data.data).flatMap((month) => {
         if (!month || typeof month !== "object") return [];
 
@@ -99,25 +112,35 @@ const Transactions = () => {
     }
   };
 
-  const handleDownload = async () => {
-    try {
-      const response = await loadReport(selectedBudgetId);
-      if (!response.ok) throw new Error("Failed to download file");
+const handleDownload = async () => {
+  try {
+    const response = await loadReport(selectedBudgetId);
+    const { fileName, fileData } = response.data;
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "transactions.xlsx");
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Download failed:", error);
-      alert("Failed to download file. Please try again later.");
-    }
-  };
+    // Декодуємо Base64 у масив байтів
+    const byteCharacters = atob(fileData);
+    const byteNumbers = Array.from(byteCharacters, char => char.charCodeAt(0));
+    const byteArray = new Uint8Array(byteNumbers);
+
+    // Створюємо Blob із Excel MIME-типом
+    const blob = new Blob([byteArray], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", fileName || "transactions.xlsx");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Download failed:", error);
+    alert("Failed to download file. Please try again later.");
+  }
+};
+
 
   const navigate = useNavigate();
   const handleLogout = () => {
@@ -188,7 +211,7 @@ const Transactions = () => {
               <option value="sum">Sum</option>
             </select>
             <button className="transactions-button" onClick={() => openModal("add")}>Add transaction</button>
-            <button className="transactions-button" onClick={() => handleDownload()}>Load CVS</button>
+            <button className="transactions-button" onClick={handleDownload}>Load CVS</button>
           </div>
         </header>
 

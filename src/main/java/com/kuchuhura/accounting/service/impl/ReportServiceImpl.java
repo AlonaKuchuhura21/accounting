@@ -38,6 +38,7 @@ public class ReportServiceImpl implements ReportService {
                 row.createCell(3).setCellValue(t.getType().toString());
                 row.createCell(4).setCellValue(t.getAmount());
                 row.createCell(5).setCellValue(t.getDate().toString());
+                row.createCell(6).setCellValue(budget.getTitle());
             }
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             workbook.write(out);
