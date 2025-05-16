@@ -41,9 +41,9 @@ function App() {
       <Route
         path="/transactions"
         element={
-          !!localStorage.getItem('token') ? (
+          !!localStorage.getItem("token") ? (
             <Transactions />
-          ): (
+          ) : (
             <Navigate to="/auth" />
           )
         }
@@ -51,9 +51,9 @@ function App() {
       <Route
         path="/analytics"
         element={
-          !!localStorage.getItem('token') ? (
+          !!localStorage.getItem("token") ? (
             <Analytics />
-          ): (
+          ) : (
             <Navigate to="/auth" />
           )
         }
