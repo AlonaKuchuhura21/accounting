@@ -17,14 +17,15 @@ import { loadReport } from "../api/reports";
 const Transactions = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
+  const navigate = useNavigate();
 
   const [selectedBudgetId, setSelectedBudgetId] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [modalType, setModalType] = useState(null);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [sortOption, setSortOption] = useState("date");
+  const [loading, setLoading] = useState(true);
 
-  // Отримуємо budgetId з URL або localStorage
   useEffect(() => {
     const fromURL = queryParams.get("budgetId");
     if (fromURL) {
@@ -39,6 +40,7 @@ const Transactions = () => {
   }, [location.search]);
 
   const fetchTransactions = async () => {
+    setLoading(true);
     try {
       const currentYear = new Date().getFullYear();
       const res = await getYearlyTransactions(selectedBudgetId, currentYear);
@@ -60,6 +62,8 @@ const Transactions = () => {
       setTransactions(all);
     } catch (error) {
       console.error("Error fetching transactions:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -112,40 +116,31 @@ const Transactions = () => {
     }
   };
 
-const handleDownload = async () => {
-  try {
-    const response = await loadReport(selectedBudgetId);
-    const { fileName, fileData } = response.data;
+  const handleDownload = async () => {
+    try {
+      const response = await loadReport(selectedBudgetId);
+      const { fileName, fileData } = response.data;
 
-    // Декодуємо Base64 у масив байтів
-    const byteCharacters = atob(fileData);
-    const byteNumbers = Array.from(byteCharacters, char => char.charCodeAt(0));
-    const byteArray = new Uint8Array(byteNumbers);
+      const byteCharacters = atob(fileData);
+      const byteNumbers = Array.from(byteCharacters, char => char.charCodeAt(0));
+      const byteArray = new Uint8Array(byteNumbers);
 
-    // Створюємо Blob із Excel MIME-типом
-    const blob = new Blob([byteArray], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    });
+      const blob = new Blob([byteArray], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      });
 
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", fileName || "transactions.xlsx");
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error("Download failed:", error);
-    alert("Failed to download file. Please try again later.");
-  }
-};
-
-
-  const navigate = useNavigate();
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", fileName || "transactions.xlsx");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+      alert("Failed to download file. Please try again later.");
+    }
   };
 
   const showToast = (error) => {
@@ -159,9 +154,7 @@ const handleDownload = async () => {
           errorMessage = "You do not have the required permissions.";
           break;
         default:
-          errorMessage = `Error: ${error.response.status} - ${
-            error.response.data?.message || "Unknown error"
-          }`;
+          errorMessage = `Error: ${error.response.status} - ${error.response.data?.message || "Unknown error"}`;
       }
     } else if (error.request) {
       errorMessage = "No response was received from the server.";
@@ -182,9 +175,7 @@ const handleDownload = async () => {
   };
 
   const sortedTransactions = [...transactions].sort((a, b) =>
-    sortOption === "sum"
-      ? b.amount - a.amount
-      : new Date(b.date) - new Date(a.date)
+    sortOption === "sum" ? b.amount - a.amount : new Date(b.date) - new Date(a.date)
   );
 
   return (
@@ -195,10 +186,10 @@ const handleDownload = async () => {
           <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>Dashboard</NavLink>
           <NavLink to="/budgets" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>Budgets</NavLink>
           <NavLink to="/transactions" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>Transactions</NavLink>
-          <NavLink to="/analytics" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>Analytics</NavLink>
+          <NavLink to="/analytics" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>Analytics</NavLink>
         </div>
         <div className="nav-right">
-          <button onClick={handleLogout} className="nav-link logout-btn">Logout</button>
+          <button onClick={() => { localStorage.removeItem("token"); navigate("/"); }} className="nav-link logout-btn">Logout</button>
         </div>
       </nav>
 
@@ -216,25 +207,31 @@ const handleDownload = async () => {
         </header>
 
         <main className="transactions-list">
-          {sortedTransactions.length ? sortedTransactions.map((txn) => (
-            <div key={txn.id} className="transaction-card">
-              <div className="transaction-info">
-                <h3>{txn.title}</h3>
-                <p className="sum">Sum: {txn.amount > 0 ? "+" : ""}{txn.amount} ₴</p>
-                <p className="date">{txn.date}</p>
+          {loading ? (
+            <p className="empty-msg">Loading...</p>
+          ) : sortedTransactions.length === 0 ? (
+            <p className="empty-msg">
+              <h2>No transactions are added yet.</h2>
+            </p>
+          ) : (
+            sortedTransactions.map((txn) => (
+              <div key={txn.id} className="transaction-card">
+                <div className="transaction-info">
+                  <h3>{txn.title}</h3>
+                  <p className="sum">Sum: {txn.amount > 0 ? "+" : ""}{txn.amount} ₴</p>
+                  <p className="date">{txn.date}</p>
+                </div>
+                <div className="actions">
+                  <Eye size={20} title="View Details" className="icon" onClick={() => openModal("view", txn)} />
+                  <Pencil size={20} title="Edit" className="icon" onClick={() => openModal("edit", txn)} />
+                  <Trash2 size={20} title="Delete" className="icon" onClick={() => handleDeleteTransaction(txn.id)} />
+                </div>
               </div>
-              <div className="actions">
-                <Eye size={20} title="View Details" className="icon" onClick={() => openModal("view", txn)} />
-                <Pencil size={20} title="Edit" className="icon" onClick={() => openModal("edit", txn)} />
-                <Trash2 size={20} title="Delete" className="icon" onClick={() => handleDeleteTransaction(txn.id)} />
-              </div>
-            </div>
-          )) : (
-            <h2>No Transactions are added yet</h2>
+            ))
           )}
         </main>
 
-        {modalType === "view" && (
+        {modalType === "view" && selectedTransaction && (
           <div className="modal-overlay">
             <div className="modal-content">
               <h3>Transaction details</h3>
