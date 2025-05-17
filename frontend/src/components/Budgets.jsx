@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Eye, Pencil, Trash2, WalletCards } from 'lucide-react';
 import '../assets/css/Budgets.css';
 import '../assets/css/Modal.css';
@@ -11,6 +11,7 @@ import {
 } from '../api/budgets';
 import { ToastContainer, toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Navigation from './common/Navigation';
 
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
@@ -117,28 +118,13 @@ const Budgets = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/');
-  };
-
   const handleViewTransactions = (budgetId) => {
     navigate(`/transactions?budgetId=${budgetId}`);
   };
 
   return (
     <div className="budgets-page">
-      <nav className="navbar">
-        <div className="nav-left">
-          <span className="logo">BudgetWise</span>
-          <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Dashboard</NavLink>
-          <NavLink to="/budgets" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Budgets</NavLink>
-        </div>
-        <div className="nav-right">
-          <NavLink to="/user-profile" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Profile</NavLink>
-          <button onClick={handleLogout} className="nav-link logout-btn">Logout</button>
-        </div>
-      </nav>
+      <Navigation/>
 
       <div className="budgets-content">
         <header className="budgets-header">

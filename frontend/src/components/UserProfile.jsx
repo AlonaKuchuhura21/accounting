@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast, Bounce } from "react-toastify";
 import { deleteUser, getUser, updateUser } from '../api/user';
 import '../assets/css/UserProfile.css';
+import Navigation from './common/Navigation';
 
 const UserProfile = () => {
   const [user, setUser] = useState(false);
@@ -82,25 +83,9 @@ const UserProfile = () => {
       }
   }
 
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/');
-  };
-
   return (
     <div className="user-profile-page">
-      <nav className="navbar">
-        <div className="nav-left">
-          <span className="logo">BudgetWise</span>
-          <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Dashboard</NavLink>
-          <NavLink to="/budgets" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Budgets</NavLink>
-        </div>
-        <div className="nav-right">
-          <NavLink to="/user-profile" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Profile</NavLink>
-          <button onClick={handleLogout} className="nav-link logout-btn">Logout</button>
-        </div>
-      </nav>
+      <Navigation/>
       <div className="user-profile-container">
         {loading ? (
             <p className="empty-msg">Loading...</p>

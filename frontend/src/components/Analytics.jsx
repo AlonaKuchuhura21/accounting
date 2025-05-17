@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Pie, Line } from "react-chartjs-2";
 import { Bar } from "react-chartjs-2";
-import { NavLink, useNavigate } from "react-router-dom";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -17,6 +16,7 @@ import {
 import "../assets/css/Analytics.css";
 import IncomeIcon from "../assets/img/IncomeIcon.svg";
 import SpentIcon from "../assets/img/SpentIcon.svg";
+import Navigation from "./common/Navigation";
 
 ChartJS.register(
   BarElement,
@@ -107,57 +107,9 @@ const Analytics = () => {
     setPeriod(e.target.value);
   };
 
-  const navigate = useNavigate();
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
-
   return (
     <div className="analytics-page">
-      <nav className="navbar">
-        <div className="nav-left">
-          <span className="logo">BudgetWise</span>
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
-          >
-            Dashboard
-          </NavLink>
-          <NavLink
-            to="/budgets"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
-          >
-            Budgets
-          </NavLink>
-          <NavLink
-            to="/transactions"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
-          >
-            Transactions
-          </NavLink>
-          <NavLink
-            to="/analytics"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
-          >
-            Analytics
-          </NavLink>
-        </div>
-        <div className="nav-right">
-          <NavLink to="/user-profile" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Profile</NavLink>
-          <button onClick={handleLogout} className="nav-link logout-btn">
-            Logout
-          </button>
-        </div>
-      </nav>
+      <Navigation/>
       <div className="analytics-content">
         <div className="analytics-header">
           <h2>Analytics</h2>

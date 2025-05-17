@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import AddTransactionModal from "../modals/AddTransactionModal";
 import EditTransactionModal from "../modals/EditTransactionModal";
 import { Eye, Pencil, Trash2 } from "lucide-react";
@@ -13,11 +13,11 @@ import {
 import { ToastContainer, toast, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { loadReport } from "../api/reports";
+import Navigation from "./common/Navigation";
 
 const Transactions = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const navigate = useNavigate();
 
   const [selectedBudgetId, setSelectedBudgetId] = useState(null);
   const [transactions, setTransactions] = useState([]);
@@ -143,11 +143,6 @@ const Transactions = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/');
-  };
-
   const showToast = (error) => {
     let errorMessage = "There was an error. Please try again.";
     if (error.response) {
@@ -185,20 +180,7 @@ const Transactions = () => {
 
   return (
     <div className="transactions-page">
-      <nav className="navbar">
-        <div className="nav-left">
-          <span className="logo">BudgetWise</span>
-          <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>Dashboard</NavLink>
-          <NavLink to="/budgets" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>Budgets</NavLink>
-          <NavLink to="/transactions" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>Transactions</NavLink>
-          <NavLink to="/analytics" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>Analytics</NavLink>
-        </div>
-        <div className="nav-right">
-          <NavLink to="/user-profile" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Profile</NavLink>
-          <button onClick={handleLogout} className="nav-link logout-btn">Logout</button>
-        </div>
-      </nav>
-
+      <Navigation/>
       <div className="transactions-content">
         <header className="transactions-header">
           <h2>Transactions</h2>

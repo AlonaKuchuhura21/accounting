@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
 import "../assets/css/Dashboard.css";
 import { getMonthlySummary } from "../api/dashboard";
 import { getBudgets } from "../api/budgets";
+import Navigation from "./common/Navigation";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   const [income, setIncome] = useState(0);
   const [outcome, setOutcome] = useState(0);
 
@@ -41,36 +40,9 @@ const Dashboard = () => {
     fetchSummary();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
-
   return (
     <div className="dashboard-thumb">
-      <nav className="navbar">
-        <div className="nav-left">
-          <span className="logo">BudgetWise</span>
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
-          >
-            Dashboard
-          </NavLink>
-          <NavLink
-            to="/budgets"
-            className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
-          >
-            Budgets
-          </NavLink>
-        </div>
-        <div className="nav-right">
-          <NavLink to="/user-profile" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Profile</NavLink>
-          <button onClick={handleLogout} className="nav-link logout-btn">
-            Logout
-          </button>
-        </div>
-      </nav>
+      <Navigation/>
 
       <div className="dashboard-page">
         <div className="dashboard-content">
