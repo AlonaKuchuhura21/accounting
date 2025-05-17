@@ -143,6 +143,11 @@ const Transactions = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/');
+  };
+
   const showToast = (error) => {
     let errorMessage = "There was an error. Please try again.";
     if (error.response) {
@@ -189,7 +194,8 @@ const Transactions = () => {
           <NavLink to="/analytics" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>Analytics</NavLink>
         </div>
         <div className="nav-right">
-          <button onClick={() => { localStorage.removeItem("token"); navigate("/"); }} className="nav-link logout-btn">Logout</button>
+          <NavLink to="/user-profile" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Profile</NavLink>
+          <button onClick={handleLogout} className="nav-link logout-btn">Logout</button>
         </div>
       </nav>
 

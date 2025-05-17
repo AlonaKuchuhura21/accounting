@@ -1,0 +1,142 @@
+.user-profile-container {
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  .app-header {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .app-header button {
+    padding: 0.5rem 1rem;
+    background: #eee;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .user-card {
+    margin: 2rem auto;
+    padding: 2rem;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    width: 300px;
+    background-color: #f9f9f9;
+  }
+  
+  .user-avatar {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    background: #ccc;
+  }
+  
+  .user-actions {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .user-actions button {
+    padding: 0.5rem 1rem;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  
+  .user-actions .danger {
+    background-color: #dc3545;
+  }
+
+  /* === Modal Backdrop (Shared) === */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  /* === Base Modal Wrapper (Shared) === */
+  .modal-form-container {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 30px;
+    width: 500px;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* === Modal Title === */
+  .modal-form-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #09090b;
+    margin-bottom: 10px;
+  }
+  
+  /* === Modal Subtitle === */
+  .modal-form-subtitle {
+    font-size: 18px;
+    color: #71717a;
+    margin-bottom: 30px;
+  }
+
+  .modal-form-container .form-group {
+    display: flex;
+  }
+  
+  /* === Button Row for Delete & Edit Modals === */
+  .modal-button-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  /* === Shared Modal Button Base === */
+  .modal-btn {
+    flex: 1;
+    height: 64px;
+    border-radius: 10px;
+    border: none;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* === Confirm/Save Button (Primary) === */
+  .modal-btn.primary {
+    background-color: #6d28d9;
+    color: white;
+  }
+  
+  /* === Cancel Button (Neutral) === */
+  .modal-btn.cancel {
+    border: 1px solid #6d28d9;
+    color: #6d28d9;
+    background: transparent;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+  }
+  
+  /* === Danger Button (Red) === */
+  .modal-btn.danger {
+    background-color: #dc3545;
+    color: white;
+  }
+  

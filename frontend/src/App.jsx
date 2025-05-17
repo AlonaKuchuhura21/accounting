@@ -9,6 +9,7 @@ import Authentication from "./components/Authentication";
 import Budgets from "./components/Budgets";
 import Transactions from "./components/Transactions"; // ← додано колегою
 import Analytics from "./components/Analytics";
+import UserProfile from "./components/UserProfile";
 
 function App() {
   return (
@@ -18,6 +19,16 @@ function App() {
       <Route path="/auth/login" element={<Login />} />
       <Route path="/auth/signup" element={<Register />} />
       <Route path="/confirm-email" element={<ConfirmEmail />} />
+      <Route
+        path="/user-profile"
+        element={
+          !!localStorage.getItem("token") ? (
+            <UserProfile />
+          ) : (
+            <Navigate to="/auth" />
+          )
+        }
+      />
       <Route
         path="/dashboard"
         element={

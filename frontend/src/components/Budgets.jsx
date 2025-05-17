@@ -135,6 +135,7 @@ const Budgets = () => {
           <NavLink to="/budgets" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Budgets</NavLink>
         </div>
         <div className="nav-right">
+          <NavLink to="/user-profile" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>Profile</NavLink>
           <button onClick={handleLogout} className="nav-link logout-btn">Logout</button>
         </div>
       </nav>

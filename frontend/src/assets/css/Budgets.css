@@ -7,8 +7,7 @@
   .budgets-content {
     padding: 4rem;
   }
-  
-  
+
   .budgets-header {
     display: flex;
     justify-content: space-between;
@@ -116,5 +115,14 @@
   .progress-fill {
     height: 100%;
     background-color: #6c63ff;
+  }
+
+  .budget-form label {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .budget-form textarea {
+    width: auto;
   }
   
