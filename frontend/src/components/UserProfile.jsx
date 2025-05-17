@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast, Bounce } from "react-toastify";
-import { deleteUser, getUser, updateUser } from '../api/user';
+import { deleteUser, getCurrentUser, updateUser } from '../api/user';
 import '../assets/css/UserProfile.css';
 import Navigation from './common/Navigation';
 
 const UserProfile = () => {
-  const [user, setUser] = useState(false);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -16,16 +16,16 @@ const UserProfile = () => {
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          errorMessage = "Incorrect email address or password";
+          errorMessage = "Unauthorized.";
           break;
         case 403:
-          errorMessage = "You do not have the required permissions.";
+          errorMessage = "Access denied.";
           break;
         default:
           errorMessage = `Error: ${error.response.status} - ${error.response.data?.message || "Unknown error"}`;
       }
     } else if (error.request) {
-      errorMessage = "No response was received from the server.";
+      errorMessage = "No response received.";
     } else {
       errorMessage = "Request error.";
     }
@@ -33,84 +33,82 @@ const UserProfile = () => {
     toast.error(errorMessage, {
       position: "bottom-right",
       autoClose: 4000,
-      hideProgressBar: false,
-      closeOnClick: false,
-      pauseOnHover: true,
-      draggable: true,
-      theme: "light",
       transition: Bounce,
     });
   };
-  
+
   const fetchUser = async () => {
-      try {
-        const loadedUser = await getUser();
-  
-        setUser(loadedUser);
-      } catch (error) {
-        console.error("Error fetching user:", error);
-        showToast(error)
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    useEffect(() => {
-        fetchUser();
-    }, []);
+    try {
+      const res = await getCurrentUser();
+      setUser(res.data);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      showToast(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   const navigate = useNavigate();
 
   const handleDelete = async () => {
     try {
       await deleteUser();
-        navigate('/');
+      navigate('/');
     } catch (error) {
-    console.error("Error fetching user:", error);
-    showToast(error);
+      console.error("Error deleting user:", error);
+      showToast(error);
     }
-    // TODO: call API to delete user
-    // on success:
   };
 
-  const handleEditProfile = async () => {
+  const handleEditProfile = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const fullName = form.name.value.trim();
+    const password = form.password.value.trim();
+
     try {
-        await updateUser();
-          navigate('/');
-      } catch (error) {
-      console.error("Error fetching user:", error);
+      await updateUser({ fullName, password: password || null });
+      setShowEditModal(false);
+      await fetchUser();
+    } catch (error) {
+      console.error("Error updating user:", error);
       showToast(error);
-      }
-  }
+    }
+  };
 
   return (
     <div className="user-profile-page">
-      <Navigation/>
+      <Navigation />
       <div className="user-profile-container">
         {loading ? (
-            <p className="empty-msg">Loading...</p>
-            ) : (
-            <div className="user-card">
-                <div className="user-avatar"></div>
-                <h2>{user.fullName}</h2>
-                <p>{user.email}</p>
-                <p>Registered: {new Date(user.createdAt).toLocaleDateString()}</p>
-
-                <div className="user-actions">
-                <button onClick={() => setShowEditModal(true)}>Edit Profile</button>
-                <button className="danger" onClick={() => setShowDeleteModal(true)}>Delete Profile</button>
-                </div>
+          <p className="empty-msg">Loading...</p>
+        ) : (
+          <div className="user-card">
+            <div className="user-avatar">
+            {user.fullName?.split(" ").map(n => n[0]).join("")}
             </div>
+            <p>{user.email}</p>
+            <p>Registered: {new Date(user.createdAt).toLocaleDateString()}</p>
+            <div className="user-actions">
+              <button onClick={() => setShowEditModal(true)}>Edit Profile</button>
+              <button className="danger" onClick={() => setShowDeleteModal(true)}>Delete Profile</button>
+            </div>
+          </div>
         )}
 
-        {showEditModal && (
+        {showEditModal && user && (
           <div className="modal-backdrop">
             <div className="modal-form-container">
               <p className="modal-form-title">Edit Profile</p>
               <p className="modal-form-subtitle">Update your information below.</p>
               <form onSubmit={handleEditProfile}>
                 <div className="form-group">
-                  <input type="text" name="name" defaultValue={user.name} placeholder="New Name" />
+                  <input type="text" name="name" defaultValue={user.fullName} placeholder="New Name" />
                 </div>
                 <div className="form-group">
                   <input type="password" name="password" placeholder="New Password" />
@@ -122,17 +120,13 @@ const UserProfile = () => {
               </form>
             </div>
           </div>
-          
-          
         )}
 
         {showDeleteModal && (
           <div className="modal-backdrop">
             <div className="modal-form-container">
               <p className="modal-form-title">Delete Profile</p>
-              <p className="modal-form-subtitle">
-                Are you sure you want to delete your profile?
-              </p>
+              <p className="modal-form-subtitle">Are you sure you want to delete your profile?</p>
               <div className="modal-button-row">
                 <button className="modal-btn danger" onClick={handleDelete}>Yes, Delete</button>
                 <button className="modal-btn cancel" onClick={() => setShowDeleteModal(false)}>Cancel</button>
@@ -140,7 +134,7 @@ const UserProfile = () => {
             </div>
           </div>
         )}
-        <ToastContainer/>
+        <ToastContainer />
       </div>
     </div>
   );

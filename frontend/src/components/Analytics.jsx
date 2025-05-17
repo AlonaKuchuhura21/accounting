@@ -1,6 +1,5 @@
-import React, { useState } from "react";
-import { Pie, Line } from "react-chartjs-2";
-import { Bar } from "react-chartjs-2";
+import React, { useState, useEffect } from "react";
+import { Pie, Line, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -17,6 +16,8 @@ import "../assets/css/Analytics.css";
 import IncomeIcon from "../assets/img/IncomeIcon.svg";
 import SpentIcon from "../assets/img/SpentIcon.svg";
 import Navigation from "./common/Navigation";
+import { getYearlyTransactions } from "../api/transactions";
+import { getBudgetById } from "../api/budgets";
 
 ChartJS.register(
   BarElement,
@@ -32,127 +33,168 @@ ChartJS.register(
 
 const Analytics = () => {
   const [period, setPeriod] = useState("");
+  const [spendingByCategory, setSpendingByCategory] = useState(null);
+  const [incomeOutcomeData, setIncomeOutcomeData] = useState(null);
+  const [budgetInfo, setBudgetInfo] = useState(null);
+  const [columnChartData, setColumnChartData] = useState(null);
 
-  // Mock data
+  const selectedBudgetId = localStorage.getItem("activeBudgetId");
 
-  const spendingByCategory = {
-    labels: ["Groceries", "Rent", "Utilities"],
-    datasets: [
-      {
-        data: [300, 1200, 150],
-        backgroundColor: ["#8AB4F8", "#FFC466", "#9A6AFF"],
-        borderWidth: 0,
-      },
-    ],
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!selectedBudgetId || !period) return;
+      const [year, month] = period.split("-").map(Number);
+      const monthName = new Date(year, month - 1).toLocaleString("en-US", { month: "long" }).toUpperCase();
 
-  const incomeOutcomeData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
-    datasets: [
-      {
-        label: "Income",
-        data: [800, 950, 1000, 1050, 1200, 1000, 1200],
-        borderColor: "#9A6AFF",
-        backgroundColor: "rgba(154, 106, 255, 0.1)",
-        tension: 0.4,
-        fill: true,
-      },
-      {
-        label: "Expend",
-        data: [500, 600, 700, 400, 600, 700, 500],
-        borderColor: "#FFC466",
-        backgroundColor: "rgba(255, 196, 102, 0.1)",
-        tension: 0.4,
-        fill: true,
-      },
-    ],
-  };
+      try {
+        const [transactionsRes, budgetRes] = await Promise.all([
+          getYearlyTransactions(selectedBudgetId, year),
+          getBudgetById(selectedBudgetId),
+        ]);
 
-  const budgetInfo = {
-    spent: 2000,
-    remaining: 1000,
-    totalBalance: 3000,
-  };
+        const res = transactionsRes;
+        const monthData = res.data.data[monthName];
+        if (!monthData) return;
 
-  const columnChartData = {
-    labels: ["April Rent", "Groceries Week 2", "Car Repair"],
-    datasets: [
-      {
-        label: "Spendings",
-        data: [1200, 250, 200],
-        backgroundColor: ["#9A6AFF", "#FFC466", "#8AB4F8"],
-        borderRadius: 4,
-      },
-    ],
-  };
+        const incomeArr = monthData.income || [];
+        const expenseArr = monthData.expense || [];
 
-  const columnChartOptions = {
-    indexAxis: "x", // Column chart (default)
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          callback: (value) => `$${value}`,
-        },
-      },
-    },
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-  };
+        let totalIncome = 0;
+        let totalExpense = 0;
+        const titleMap = {};
+        const topSpendingsArr = [];
+        const incomeWeeks = Array(5).fill(0);
+        const expenseWeeks = Array(5).fill(0);
 
-  const handlePeriodChange = (e) => {
-    setPeriod(e.target.value);
-  };
+        incomeArr.forEach((t) => {
+          if (!t.date || isNaN(new Date(t.date))) return;
+          totalIncome += t.amount;
+          const week = Math.min(Math.floor(new Date(t.date).getDate() / 7), 4);
+          incomeWeeks[week] += t.amount;
+        });
+
+        expenseArr.forEach((t) => {
+          if (!t.date || isNaN(new Date(t.date))) return;
+          totalExpense += t.amount;
+          const week = Math.min(Math.floor(new Date(t.date).getDate() / 7), 4);
+          expenseWeeks[week] += t.amount;
+          titleMap[t.title] = (titleMap[t.title] || 0) + t.amount;
+          topSpendingsArr.push({ name: t.title, amount: t.amount });
+        });
+
+        const pieLabels = Object.keys(titleMap);
+        const pieValues = Object.values(titleMap);
+
+        setSpendingByCategory({
+          labels: pieLabels,
+          datasets: [{
+            data: pieValues,
+            backgroundColor: ["#8AB4F8", "#FFC466", "#9A6AFF", "#FF6B6B", "#00C49F", "#F67280", "#6C5B7B"],
+            borderWidth: 0,
+          }],
+        });
+
+        setIncomeOutcomeData({
+          labels: ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5"],
+          datasets: [
+            {
+              label: "Income",
+              data: incomeWeeks,
+              borderColor: "#9A6AFF",
+              backgroundColor: "rgba(154, 106, 255, 0.1)",
+              tension: 0.4,
+              fill: true,
+            },
+            {
+              label: "Expend",
+              data: expenseWeeks,
+              borderColor: "#FFC466",
+              backgroundColor: "rgba(255, 196, 102, 0.1)",
+              tension: 0.4,
+              fill: true,
+            },
+          ],
+        });
+
+        const initialBalance = budgetRes.data.initialBalance || 0;
+
+        setBudgetInfo({
+          spent: totalExpense,
+          remaining: initialBalance + totalIncome - totalExpense,
+          totalBalance: initialBalance + totalIncome,
+        });
+
+        const top3 = topSpendingsArr
+          .reduce((acc, t) => {
+            const existing = acc.find((item) => item.name === t.name);
+            if (existing) existing.amount += t.amount;
+            else acc.push({ name: t.name, amount: t.amount });
+            return acc;
+          }, [])
+          .sort((a, b) => b.amount - a.amount)
+          .slice(0, 3);
+
+        setColumnChartData({
+          labels: top3.map((t) => t.name),
+          datasets: [{
+            label: "Spendings",
+            data: top3.map((t) => t.amount),
+            backgroundColor: ["#9A6AFF", "#FFC466", "#8AB4F8"],
+            borderRadius: 4,
+          }],
+        });
+      } catch (err) {
+        console.error("Failed to load analytics", err);
+      }
+    };
+
+    fetchData();
+  }, [selectedBudgetId, period]);
 
   return (
     <div className="analytics-page">
-      <Navigation/>
+      <Navigation />
       <div className="analytics-content">
         <div className="analytics-header">
           <h2>Analytics</h2>
         </div>
         <div className="period-selector">
           <label>Select period: </label>
-          <input type="month" onChange={handlePeriodChange} />
+          <input type="month" onChange={(e) => setPeriod(e.target.value)} />
         </div>
 
-        {period && (
+        {period && spendingByCategory && incomeOutcomeData && budgetInfo && columnChartData ? (
           <div className="analytics-grid">
             <div className="analytics-block chart-container">
               <h3>Spending by Category</h3>
-              <div className="pie-thumb">
+              <div className="pie-thumb" style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center", height: 250 }}>
                 <Pie
                   data={spendingByCategory}
                   options={{
                     rotation: -90,
                     circumference: 180,
-                    cutout: "85%",
+                    cutout: "70%",
                     plugins: {
                       legend: {
                         position: "bottom",
                         labels: {
                           usePointStyle: true,
-                          pointStyle: "rect",
-                          boxWidth: 10,
-                          padding: 20,
+                          pointStyle: "circle",
+                          padding: 15,
+                          boxWidth: 12,
                         },
                       },
                       tooltip: {
-                        mode: "index",
-                        intersect: false,
                         callbacks: {
-                          label: (ctx) => `${ctx.label}: ${ctx.raw}%`,
+                          label: (ctx) => `${ctx.label}: ₴${ctx.raw.toLocaleString()}`,
                         },
                       },
                     },
                     elements: {
                       arc: {
-                        borderWidth: 20,
+                        borderWidth: 14,
                         borderColor: "#ffffff",
-                        borderRadius: 4,
+                        borderRadius: 6,
                       },
                     },
                   }}
@@ -164,45 +206,26 @@ const Analytics = () => {
               <h3 className="budget-summary-title">Budget Summary</h3>
               <div className="budget-thumb">
                 <p className="budget-spent-text">
-                  <img
-                    width={50}
-                    className="budget-icon"
-                    alt="spent"
-                    src={SpentIcon}
-                  />
+                  <img width={50} className="budget-icon" alt="spent" src={SpentIcon} />
                   Spent:
                 </p>
-                <p className="budget-value-text"> ${budgetInfo.spent}</p>
+                <p className="budget-value-text">₴{budgetInfo.spent}</p>
                 <div className="item-progress-shadow">
                   <div
-                    style={{
-                      width: `${
-                        (budgetInfo.spent / budgetInfo.totalBalance) * 100
-                      }%`,
-                    }}
+                    style={{ width: `${(budgetInfo.spent / budgetInfo.totalBalance) * 100}%` }}
                     className="item-progress-line yellow"
                   ></div>
                 </div>
               </div>
               <div className="budget-thumb">
                 <p className="budget-spent-text">
-                  <img
-                    width={50}
-                    className="budget-icon"
-                    alt="remained"
-                    src={IncomeIcon}
-                  />
+                  <img width={50} className="budget-icon" alt="remained" src={IncomeIcon} />
                   Remaining:
                 </p>
-                <p className="budget-value-text"> ${budgetInfo.remaining}</p>
-
+                <p className="budget-value-text">₴{budgetInfo.remaining}</p>
                 <div className="item-progress-shadow">
                   <div
-                    style={{
-                      width: `${
-                        (budgetInfo.remaining / budgetInfo.totalBalance) * 100
-                      }%`,
-                    }}
+                    style={{ width: `${(budgetInfo.remaining / budgetInfo.totalBalance) * 100}%` }}
                     className="item-progress-line violet"
                   ></div>
                 </div>
@@ -211,61 +234,16 @@ const Analytics = () => {
 
             <div className="analytics-block chart-container">
               <h3>Income vs Outcome</h3>
-              <Line
-                data={incomeOutcomeData}
-                options={{
-                  plugins: {
-                    tooltip: {
-                      callbacks: {
-                        label: (ctx) => `$${ctx.parsed.y.toLocaleString()}`,
-                      },
-                    },
-
-                    legend: {
-                      display: true,
-                      labels: {
-                        // pointStyle: "rect",
-                        usePointStyle: true,
-                        boxWidth: 20,
-                        padding: 10,
-                      },
-                    },
-                  },
-                  elements: {
-                    line: {
-                      borderWidth: 4,
-                    },
-                    point: {
-                      radius: 5,
-                      borderWidth: 2,
-                      backgroundColor: "#fff",
-                    },
-                  },
-                  scales: {
-                    y: {
-                      beginAtZero: true,
-                      ticks: {
-                        callback: (value) => `$${value / 1000}k`,
-                      },
-                    },
-                  },
-                }}
-              />{" "}
+              <Line data={incomeOutcomeData} />
             </div>
 
             <div className="analytics-block top-spendings">
               <h3>Top 3 Spendings</h3>
-              <Bar data={columnChartData} options={columnChartOptions} />
-
-              {/* <ul>
-                {topSpendings.map((item, idx) => (
-                  <li key={idx}>
-                    {item.name} — <strong>${item.amount}</strong>
-                  </li>
-                ))}
-              </ul> */}
+              <Bar data={columnChartData} />
             </div>
           </div>
+        ) : (
+          <p className="empty-msg">No data available for the selected month.</p>
         )}
       </div>
     </div>

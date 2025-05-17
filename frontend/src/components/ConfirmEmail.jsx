@@ -23,7 +23,7 @@ const ConfirmEmail = () => {
                 if (response.status === 200) {
                     setStatus('success');
                     setMessage('Your account has been successfully verified!');
-                    setTimeout(() => navigate("/auth/login"), 3000);
+                    setTimeout(() => navigate("/dashboard"), 3000);
                 }
             } catch (error) {
                 setStatus('error');

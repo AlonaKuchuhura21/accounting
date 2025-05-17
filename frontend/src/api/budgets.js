@@ -23,3 +23,7 @@ export const updateBudget = async (id, data) => {
 export const deleteBudget = async (id) => {
   return await axios.delete(`${BASE_URL}/${id}/delete`, authHeader());
 };
+
+export const getBudgetById = async (id) => {
+  return await axios.get(`${BASE_URL}/${id}`, authHeader());
+};
